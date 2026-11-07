@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aventura de las palabras | Juego educativo</title>
+<style>
+:root{
+ --ink:#26324b;--muted:#65718a;--paper:#fff;--bg:#f4f7ff;
+ --pink:#ff7eaa;--purple:#8d7cf6;--blue:#54b8e8;--green:#53c7a0;
+ --yellow:#ffd166;--line:#e7eaf4;--shadow:0 18px 50px rgba(53,65,110,.13);
+}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:ui-rounded,"Trebuchet MS",system-ui,-apple-system,sans-serif;color:var(--ink);
+ background:radial-gradient(circle at 10% 10%,#ffe8f1 0,transparent 26%),radial-gradient(circle at 90% 8%,#e4f7ff 0,transparent 28%),linear-gradient(135deg,#f8f6ff,#f0fbff);padding:22px}
+button{font:inherit;cursor:pointer}
+.app{width:min(100%,980px);margin:0 auto}
+.topline{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0 0 16px}
+.brand{font-weight:900;letter-spacing:.3px;color:#56617d;font-size:14px}
+.pill{background:#fff;border:1px solid var(--line);border-radius:99px;padding:8px 13px;font-size:12px;color:var(--muted);font-weight:800}
+.panel{background:rgba(255,255,255,.94);border:1px solid rgba(255,255,255,.9);border-radius:28px;box-shadow:var(--shadow);overflow:hidden}
+.hero{padding:clamp(26px,6vw,58px);text-align:center;position:relative}
+.hero:before,.hero:after{content:"";position:absolute;border-radius:50%;opacity:.5;pointer-events:none}
+.hero:before{width:150px;height:150px;background:#ffe0ec;left:-55px;top:-55px}
+.hero:after{width:180px;height:180px;background:#dff5ff;right:-70px;bottom:-70px}
+.hero-content{position:relative;z-index:1}
+.eyebrow{display:inline-flex;align-items:center;gap:7px;border-radius:99px;background:#f1efff;color:#7062d9;padding:8px 13px;font-weight:900;font-size:12px;letter-spacing:.5px;text-transform:uppercase}
+h1{font-size:clamp(36px,7vw,66px);line-height:1.02;margin:18px auto 12px;max-width:760px;letter-spacing:-2px}
+.gradient{background:linear-gradient(90deg,#ef6799,#8572ed,#39a9d8);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{font-size:clamp(15px,2.3vw,18px);line-height:1.65;color:var(--muted);max-width:650px;margin:0 auto 24px}
+.worlds{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:28px auto;max-width:700px}
+.world-mini{padding:13px 8px;border-radius:18px;background:#fafaff;border:1px solid var(--line);font-size:12px;font-weight:800;color:#59647d}
+.world-mini span{display:block;font-size:26px;margin-bottom:5px}
+.primary{border:0;border-radius:16px;padding:15px 26px;background:linear-gradient(100deg,#8a78f3,#5bb9e8);color:white;font-weight:900;font-size:16px;box-shadow:0 9px 20px rgba(112,119,230,.25);transition:.2s}
+.primary:hover{transform:translateY(-2px);filter:brightness(1.04)}
+.secondary{border:1px solid var(--line);background:white;color:var(--ink);border-radius:14px;padding:12px 18px;font-weight:800}
+.small-note{font-size:12px;color:#8992a8;margin-top:15px}
+.game{padding:clamp(18px,4vw,36px)}
+.game-head{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:18px}
+.stage-info{display:flex;align-items:center;gap:12px}
+.stage-icon{width:54px;height:54px;border-radius:17px;display:grid;place-items:center;font-size:28px;background:var(--stage-soft)}
+.stage-name{font-weight:900;font-size:18px}
+.stage-sub{font-size:12px;color:var(--muted);margin-top:3px}
+.counter{font-size:13px;color:var(--muted);font-weight:900;white-space:nowrap}
+.progress-wrap{height:10px;border-radius:99px;background:#edf0f7;overflow:hidden;margin:0 0 27px}
+.progress{height:100%;width:0;background:linear-gradient(90deg,#ff8ab3,#8e7cf4,#56bde5);border-radius:99px;transition:width .35s}
+.question-kicker{color:#8b7ce6;text-transform:uppercase;letter-spacing:1.3px;font-size:11px;font-weight:900;margin-bottom:10px}
+.question{font-size:clamp(21px,4vw,30px);line-height:1.25;letter-spacing:-.5px;margin:0 0 22px}
+.options{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.option{display:flex;align-items:flex-start;gap:12px;text-align:left;padding:16px;border-radius:17px;background:#fff;border:2px solid #e9ecf5;color:var(--ink);font-size:15px;line-height:1.45;font-weight:700;min-height:82px;transition:.18s}
+.option:hover:not(:disabled){border-color:#aaa0fa;background:#faf9ff;transform:translateY(-2px)}
+.letter{flex:0 0 29px;height:29px;border-radius:10px;background:#f0efff;color:#786be0;display:grid;place-items:center;font-weight:900;font-size:13px}
+.option.correct{border-color:#55c69e;background:#edfbf5}
+.option.correct .letter{background:#55c69e;color:white}
+.option.wrong{border-color:#f08aa6;background:#fff1f5}
+.option.wrong .letter{background:#f08aa6;color:white}
+.option:disabled{cursor:default}
+.feedback{display:none;margin-top:18px;border-radius:18px;padding:17px 19px;line-height:1.55}
+.feedback.show{display:block;animation:pop .25s ease}
+.feedback.good{background:#edfbf5;border:1px solid #c5f0df}
+.feedback.try{background:#fff5f7;border:1px solid #f8d3de}
+.feedback-title{font-weight:900;margin-bottom:4px}
+.feedback p{margin:0;color:#526078;font-size:14px}
+.actions{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:22px}
+.hint{font-size:12px;color:#8992a8}
+.next{display:none}
+.next.show{display:inline-flex}
+.finish{text-align:center;padding:clamp(28px,6vw,60px)}
+.finish-emoji{font-size:68px;line-height:1.2}
+.finish h2{font-size:clamp(30px,6vw,48px);margin:12px 0}
+.finish p{max-width:620px;margin:0 auto 24px;color:var(--muted);line-height:1.65}
+.finish-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:25px auto;max-width:650px}
+.finish-item{background:#fafaff;border:1px solid var(--line);border-radius:16px;padding:14px 8px;font-size:12px;font-weight:900}
+.finish-item span{display:block;font-size:25px;margin-bottom:5px}
+.hidden{display:none!important}
+@keyframes pop{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:650px){body{padding:12px}.worlds{grid-template-columns:repeat(2,1fr)}.options{grid-template-columns:1fr}.option{min-height:unset}.game-head{align-items:flex-start}.finish-grid{grid-template-columns:repeat(2,1fr)}.actions{align-items:flex-end}.hint{max-width:48%}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<main class="app">
+ <div class="topline"><div class="brand">✦ AVENTURA EDUCATIVA</div><div class="pill">Aprender · Explorar · Compartir</div></div>
+ <section id="start" class="panel hero">
+  <div class="hero-content">
+   <div class="eyebrow">📚 Una aventura de lectura y escritura</div>
+   <h1>La aventura de <span class="gradient">las palabras</span></h1>
+   <p class="lead">Explora cuatro mundos y descubre cómo la lectura y la escritura cobran sentido en casa, en la comunidad y con los recursos digitales.</p>
+   <div class="worlds">
+    <div class="world-mini"><span>🏡</span>Mundo familiar</div>
+    <div class="world-mini"><span>🏘️</span>Mundo comunitario</div>
+    <div class="world-mini"><span>💻</span>Mundo digital</div>
+    <div class="world-mini"><span>🌟</span>Misión final</div>
+   </div>
+   <button class="primary" id="startBtn">Comenzar aventura <span aria-hidden="true">➜</span></button>
+   <div class="small-note">Sin cronómetro ni competencia. Avanza a tu ritmo y aprende con cada respuesta.</div>
+  </div>
+ </section>
+
+ <section id="game" class="panel game hidden" aria-live="polite">
+  <div class="game-head">
+   <div class="stage-info">
+    <div class="stage-icon" id="stageIcon">🏡</div>
+    <div><div class="stage-name" id="stageName">Mundo familiar</div><div class="stage-sub" id="stageSub">Lectura y escritura en el hogar</div></div>
+   </div>
+   <div class="counter" id="counter">Pregunta 1 de 16</div>
+  </div>
+  <div class="progress-wrap" role="progressbar" aria-label="Progreso del juego" aria-valuemin="0" aria-valuemax="16" aria-valuenow="0"><div class="progress" id="progress"></div></div>
+  <div class="question-kicker" id="questionKicker">MUNDO 1 · EXPLORA Y PIENSA</div>
+  <h2 class="question" id="question"></h2>
+  <div class="options" id="options"></div>
+  <div class="feedback" id="feedback" role="status">
+   <div class="feedback-title" id="feedbackTitle"></div>
+   <p id="feedbackText"></p>
+  </div>
+  <div class="actions">
+   <div class="hint" id="hint">Lee con calma y elige la opción que mejor explica la situación.</div>
+   <button class="primary next" id="nextBtn">Siguiente pregunta ➜</button>
+  </div>
+ </section>
+
+ <section id="finish" class="panel finish hidden">
+  <div class="finish-emoji">🎉🌈📖</div>
+  <div class="eyebrow">¡Aventura completada!</div>
+  <h2>¡Lo lograste!</h2>
+  <p>Has recorrido los cuatro mundos y completado las 16 preguntas. Recuerda: leer y escribir tiene sentido cuando nos ayuda a comprender, expresarnos, comunicarnos y participar en la vida cotidiana.</p>
+  <div class="finish-grid">
+   <div class="finish-item"><span>🏡</span>Mundo familiar</div>
+   <div class="finish-item"><span>🏘️</span>Mundo comunitario</div>
+   <div class="finish-item"><span>💻</span>Mundo digital</div>
+   <div class="finish-item"><span>🌟</span>Misión final</div>
+  </div>
+  <button class="primary" id="replayBtn">↻ Volver a jugar</button>
+  <div class="small-note">Cada experiencia cuenta: en casa, en la comunidad y también en los espacios digitales.</div>
+ </section>
+</main>
+<script>
+const stages = [
+ {name:"Mundo familiar",sub:"Lectura y escritura en el hogar",icon:"🏡",soft:"#fff0f5"},
+ {name:"Mundo comunitario",sub:"Leer y escribir con otras personas",icon:"🏘️",soft:"#eef8ff"},
+ {name:"Mundo digital",sub:"Explorar, crear y comunicar",icon:"💻",soft:"#f0efff"},
+ {name:"Misión final",sub:"Conectar los tres mundos",icon:"🌟",soft:"#fff8e6"}
+];
+const questions = [
+ // Mundo familiar
+ {s:0,q:"En casa, Mateo escucha un cuento antes de dormir. Su mamá conversa con él sobre los personajes y le pregunta qué cree que pasará. ¿Qué hace que esta experiencia sea una forma de alfabetización familiar?",
+  a:["Que el niño memoriza el nombre de las letras antes de dormir.","Que comparte una experiencia de lectura y lenguaje con acompañamiento afectivo.","Que la mamá convierte el cuento en una tarea escolar con respuestas exactas.","Que el niño escucha el cuento sin necesidad de conversar sobre él."],c:1,
+  e:"La alfabetización familiar ocurre en el hogar mediante experiencias cotidianas y afectivas. Escuchar cuentos y conversar sobre ellos fortalece el lenguaje y la comprensión."},
+ {s:0,q:"Una familia prepara la lista de compras. La niña dibuja una manzana, intenta escribir “pan” y acompaña a su papá a buscar esos productos. ¿Cuál es el principal sentido de esta actividad?",
+  a:["Practicar trazos sin relacionarlos con una situación cotidiana.","Copiar palabras para demostrar que ya domina la escritura convencional.","Usar dibujos y escritura inicial para comunicar qué necesitan comprar.","Aprender una lista de palabras sin relacionarlas con su significado."],c:2,
+  e:"La lista de compras es una experiencia real: la niña participa con dibujos y escrituras propias para comunicar lo que hace falta en casa."},
+ {s:0,q:"El papá de Emilia dice que no puede apoyar la alfabetización porque no es docente y no sabe enseñar a leer formalmente. ¿Qué respuesta se ajusta mejor al papel de la familia?",
+  a:["Debe esperar a que la escuela enseñe todas las actividades de lectura y escritura.","Puede acompañar, conversar, leer cuentos y valorar los dibujos y escritos de Emilia.","Debe corregir cada palabra hasta que Emilia escriba de manera convencional.","Debe limitarse a comprar libros y dejar que Emilia los explore sola."],c:1,
+  e:"Los padres y madres no necesitan ser profesores. Son mediadores y modelos lectores cuando acompañan, conversan, muestran que leen y valoran lo que el niño escribe."},
+ {s:0,q:"Dos hogares realizan actividades diferentes: en uno cuentan historias familiares y en otro leen recetas para cocinar. ¿Qué característica de la alfabetización familiar se observa?",
+  a:["Es flexible y cultural, porque cada familia comparte prácticas de lectura y escritura a su manera.","Es uniforme, porque todas las familias deben realizar las mismas actividades.","Es exclusivamente escolar, porque requiere seguir una planificación docente.","Es individual, porque el niño aprende sin relacionarse con otras personas."],c:0,
+  e:"La alfabetización familiar es cotidiana, afectiva, flexible y cultural. Se adapta a la edad, al ritmo y a las prácticas de cada familia."},
+ // Mundo comunitario
+ {s:1,q:"En un paseo por el barrio, la docente invita a los niños a observar los letreros de las tiendas y los nombres de las calles. ¿Por qué esta actividad es comunitaria?",
+  a:["Porque reemplaza las experiencias de lectura que se realizan en el hogar.","Porque utiliza el entorno del barrio para reconocer que leer permite comprender la comunidad.","Porque busca que los niños memoricen todos los nombres de las calles.","Porque convierte el paseo en una evaluación de lectura formal."],c:1,
+  e:"La alfabetización comunitaria se vive en el barrio y permite leer el entorno. Los letreros y nombres de calles muestran usos reales de la lectura."},
+ {s:1,q:"En la escuela, varios niños proponen crear un mural para compartir palabras que escuchan en sus familias y en el barrio. ¿Qué característica destaca en esta propuesta?",
+  a:["Individual, porque cada niño trabaja sin compartir sus ideas.","Memorística, porque lo importante es repetir palabras sin contexto.","Participativa y colectiva, porque los niños aportan y construyen algo junto con otros.","Formal, porque el mural solo sirve para practicar caligrafía."],c:2,
+  e:"La alfabetización comunitaria es colectiva y participativa: se aprende con otros, el niño opina y propone, y la escritura tiene una función concreta."},
+ {s:1,q:"Una biblioteca invita a las familias a una feria donde presentan cuentos, carteles y relatos de su comunidad. ¿Qué objetivo de la alfabetización comunitaria se fortalece especialmente?",
+  a:["Crear espacios de aprendizaje colectivo y fomentar la participación social desde la infancia.","Sustituir las experiencias familiares por actividades organizadas por la biblioteca.","Concentrar la lectura en quienes ya reconocen todas las letras.","Separar las historias de la comunidad de las experiencias de los niños."],c:0,
+  e:"La feria reúne a familias y comunidad en una experiencia compartida. Así se crean espacios de aprendizaje colectivo y se fomenta la participación desde la infancia."},
+ {s:1,q:"Un grupo escribe una carta para invitar a otro curso a una actividad escolar. ¿Qué hace que esta tarea tenga una función comunitaria y no sea solo copiar palabras?",
+  a:["Que todos escriben exactamente el mismo texto sin saber para quién es.","Que la carta se realiza únicamente para practicar letras en el cuaderno.","Que la docente escribe todo y los niños solo decoran el papel.","Que escriben un mensaje dirigido a otras personas con una finalidad concreta."],c:3,
+  e:"La carta permite comunicarse con otro curso. La alfabetización comunitaria es funcional cuando leer y escribir sirven para algo concreto en el entorno."},
+ // Mundo digital
+ {s:2,q:"La docente utiliza una tableta para mostrar un cuento ilustrado y luego invita a los niños a contar qué comprendieron. ¿Qué demuestra esta experiencia?",
+  a:["Que alfabetizar digitalmente es aprender a manejar botones sin atender al contenido.","Que un recurso digital puede apoyar la comprensión y el aprendizaje cuando se usa con sentido.","Que las pantallas deben reemplazar los cuentos impresos y la conversación.","Que usar tecnología es suficiente para que el niño aprenda a leer formalmente."],c:1,
+  e:"En Educación Inicial, la tecnología funciona como apoyo. Los cuentos digitales pueden acercar a los niños a experiencias educativas y de comprensión."},
+ {s:2,q:"Una niña graba, con apoyo de su docente, un audio contando un cuento que escuchó. Después lo comparte con sus compañeros. ¿Qué capacidad de la alfabetización digital pone en práctica?",
+  a:["Buscar información sin comprenderla ni transformarla.","Usar un dispositivo únicamente para entretenerse.","Crear y compartir información mediante un recurso digital.","Reemplazar toda forma de comunicación oral por mensajes escritos."],c:2,
+  e:"La alfabetización digital incluye buscar, comprender, crear y compartir información. Al grabar y compartir su cuento, la niña crea un contenido y se comunica."},
+ {s:2,q:"Una familia se comunica con un familiar que vive lejos mediante un recurso digital. ¿Qué posibilidad de la alfabetización digital se evidencia?",
+  a:["Facilitar la comunicación con familiares que están lejos.","Evitar que los niños participen en conversaciones familiares.","Usar la tecnología solamente para mirar imágenes sin interactuar.","Convertir toda experiencia familiar en una actividad escolar."],c:0,
+  e:"El documento señala que los recursos digitales pueden permitir la comunicación con familiares lejanos, además de acercar cuentos y canciones educativas."},
+ {s:2,q:"En una actividad, los niños escuchan una canción educativa en un recurso digital y luego inventan movimientos para acompañarla. ¿Qué combinación de características se observa?",
+  a:["Únicamente informativa, porque reciben un contenido ya elaborado.","Solo administrativa, porque siguen instrucciones de un dispositivo.","Exclusivamente escrita, porque no intervienen imágenes ni sonidos.","Informativa y creativa, porque reciben un contenido y expresan ideas mediante movimientos."],c:3,
+  e:"La alfabetización digital puede ser informativa y creativa. Los recursos digitales acercan contenidos y también pueden servir como punto de partida para crear y expresarse."},
+ // Misión final
+ {s:3,q:"Una niña escucha un cuento con su abuela en casa, lo dibuja y lo cuenta en la escuela para elaborar un mural, y luego graba un audio con ayuda de la docente. ¿Cómo se relacionan las tres alfabetizaciones?",
+  a:["La familiar prepara para la comunitaria y la digital ayuda a compartir una creación; las tres se complementan.","La digital reemplaza a la familiar y comunitaria porque permite guardar el cuento.","La comunitaria ocurre solo cuando el cuento se publica y no cuando se comparte en clase.","Son actividades separadas que no tienen relación entre sí."],c:0,
+  e:"Es el ejemplo de relación que presenta el documento: el cuento comienza en casa, se comparte en la escuela mediante un mural y se comunica con un audio digital."},
+ {s:3,q:"Un niño escribe su nombre en un dibujo para indicar que le pertenece. ¿Por qué esta acción es un ejemplo de lectura y escritura con propósito?",
+  a:["Porque demuestra que ya escribe todas las palabras de forma convencional.","Porque realiza una actividad de copia que no necesita un destinatario.","Porque utiliza la escritura para comunicar algo real: identificar su dibujo.","Porque practica letras sin relacionarlas con lo que quiere expresar."],c:2,
+  e:"Escribir el nombre en un dibujo tiene una finalidad comunicativa: indicar que ese dibujo es suyo. Escribir con propósito significa hacerlo para algo real."},
+ {s:3,q:"¿Por qué es importante ofrecer experiencias de alfabetización desde Educación Inicial, aunque los niños todavía no lean ni escriban formalmente?",
+  a:["Porque deben dominar la lectura y escritura convencional antes de ingresar a la escuela.","Porque construyen bases como el interés por los libros, escuchar cuentos, comprender que las letras comunican y querer expresarse.","Porque la alfabetización en esta etapa consiste principalmente en completar planas de letras.","Porque las experiencias tempranas solo son útiles si se realizan con dispositivos digitales."],c:1,
+  e:"En Inicial y Preparatoria se construyen las bases de la alfabetización: interés por los libros, gusto por los cuentos y comprensión de que las letras comunican."},
+ {s:3,q:"Una docente quiere fortalecer la alfabetización de su grupo. ¿Qué propuesta integra mejor el sentido de la alfabetización familiar, comunitaria y digital?",
+  a:["Enviar planas para casa, evaluar la copia y dejar los recursos digitales solo como premio.","Realizar una actividad aislada en la biblioteca sin vincularla con las familias ni con la comunicación.","Usar una aplicación durante toda la jornada y reducir las conversaciones y los cuentos compartidos.","Invitar a las familias a compartir relatos, crear un mural con la comunidad y grabar cuentos para compartirlos en clase."],c:3,
+  e:"La propuesta une el afecto y las experiencias del hogar, la participación colectiva en la comunidad y nuevas formas digitales de crear y comunicar."}
+];
+
+let index=0, answered=false;
+const $=id=>document.getElementById(id);
+function showScreen(which){["start","game","finish"].forEach(id=>$(id).classList.toggle("hidden",id!==which));}
+function render(){
+ answered=false;
+ const item=questions[index], stage=stages[item.s], num=index+1;
+ $("stageIcon").textContent=stage.icon;
+ $("stageIcon").style.setProperty("--stage-soft",stage.soft);
+ $("stageName").textContent=stage.name;
+ $("stageSub").textContent=stage.sub;
+ $("counter").textContent=`Pregunta ${num} de ${questions.length}`;
+ $("questionKicker").textContent=`MUNDO ${item.s+1} · ${item.s===3?"CONECTA Y REFLEXIONA":"EXPLORA Y PIENSA"}`;
+ $("question").textContent=item.q;
+ $("options").innerHTML="";
+ $("feedback").className="feedback";
+ $("nextBtn").classList.remove("show");
+ $("nextBtn").textContent=index===questions.length-1?"Finalizar aventura ✓":"Siguiente pregunta ➜";
+ $("hint").textContent="Lee con calma y elige la opción que mejor explica la situación.";
+ item.a.forEach((answer,i)=>{
+  const b=document.createElement("button");b.className="option";b.type="button";
+  const letter=document.createElement("span");letter.className="letter";letter.textContent=String.fromCharCode(65+i);
+  const t=document.createElement("span");t.textContent=answer;
+  b.append(letter,t);b.addEventListener("click",()=>choose(i));$("options").appendChild(b);
+ });
+ const pct=(index/questions.length)*100;
+ $("progress").style.width=pct+"%";
+ $("game").querySelector(".progress-wrap").setAttribute("aria-valuenow",String(index));
+}
+function choose(choice){
+ if(answered)return;answered=true;
+ const item=questions[index], correct=choice===item.c;
+ [...$("options").children].forEach((b,i)=>{
+  b.disabled=true;
+  if(i===item.c)b.classList.add("correct");
+  else if(i===choice)b.classList.add("wrong");
+ });
+ $("feedback").className="feedback show "+(correct?"good":"try");
+ $("feedbackTitle").textContent=correct?"¡Muy bien! 🌟":"¡Vamos a aprender! 💡";
+ $("feedbackText").textContent=(correct?"Respuesta correcta. ":"La respuesta correcta está resaltada. ")+item.e;
+ $("nextBtn").classList.add("show");
+ $("hint").textContent=correct?"¡Sigue explorando!":"Lee la explicación y continúa a tu ritmo.";
+}
+function next(){
+ if(!answered)return;
+ if(index<questions.length-1){index++;render();}
+ else{$("progress").style.width="100%";$("game").querySelector(".progress-wrap").setAttribute("aria-valuenow","16");showScreen("finish");}
+}
+function start(){index=0;showScreen("game");render();}
+$("startBtn").addEventListener("click",start);
+$("nextBtn").addEventListener("click",next);
+$("replayBtn").addEventListener("click",start);
+</script>
+</body>
+</html>
